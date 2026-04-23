@@ -1,0 +1,21 @@
+[tool.ruff]
+target-version = "py313"
+line-length = 120
+
+[tool.ruff.lint]
+select = ["ALL"]
+ignore = [
+    "D",       # docstrings — small codebase, not required
+    "ANN",     # type annotations — not fully typed
+    "PLR2004", # magic value comparisons — constants are self-documenting here
+    "C901",    # function complexity — websocket_endpoint is an intentional state machine
+    "PLR0912", # too many branches — same
+    "PLR0915", # too many statements — same
+    "COM812",  # trailing comma — conflicts with ruff formatter
+]
+
+[tool.ruff.lint.per-file-ignores]
+# mimetypes.add_type calls must precede FastAPI imports — intentional E402
+"main.py" = ["E402"]
+# assert is idiomatic in pytest
+"tests/**" = ["S101"]

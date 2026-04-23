@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NullPost — Secure Text & File Transfer</title>
+    <meta name="description" content="Self-hosted, end-to-end encrypted text and file transfer. Two devices connect with a shared password — the server never sees your data. No accounts, no storage, no logs.">
+    <meta name="keywords" content="secure file transfer, end-to-end encryption, encrypted messaging, self-hosted, peer-to-peer, P2P, WebRTC, private messaging, zero knowledge, no logs">
+    <meta name="author" content="NullPost">
+    <meta name="robots" content="index, follow">
+    <meta property="og:title" content="NullPost — Secure Text & File Transfer">
+    <meta property="og:description" content="End-to-end encrypted text and file transfer between two devices. No accounts, no storage, no logs. The server is just a relay.">
+    <meta property="og:type" content="website">
+    <meta property="og:image" content="logo-256.png">
+    <link rel="icon" type="image/png" href="logo-48.png">
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#0d1117">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <link rel="apple-touch-icon" sizes="180x180" href="logo-180.png">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <!-- Connect screen -->
+    <main id="screen-connect" class="screen active">
+        <div class="toolbar-top">
+            <div class="lang-picker">
+                <button id="btn-connect-screen-lang" class="btn-lang-globe" aria-label="Bytt språk" data-i18n-aria="langLabel" aria-haspopup="listbox" aria-expanded="false">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <circle cx="12" cy="12" r="10"/>
+                        <line x1="2" y1="12" x2="22" y2="12"/>
+                        <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
+                    </svg>
+                </button>
+                <div id="lang-menu-connect" class="lang-menu" hidden role="listbox">
+                    <button class="lang-option" data-lang="es" role="option"><img src="/static/flags/es.svg" class="lang-flag" alt="">Español</button>
+                    <button class="lang-option" data-lang="en" role="option"><img src="/static/flags/gb.svg" class="lang-flag" alt="">English</button>
+                    <button class="lang-option" data-lang="pt" role="option"><img src="/static/flags/pt.svg" class="lang-flag" alt="">Português</button>
+                    <button class="lang-option" data-lang="ru" role="option"><img src="/static/flags/ru.svg" class="lang-flag" alt="">Русский</button>
+                    <button class="lang-option" data-lang="de" role="option"><img src="/static/flags/de.svg" class="lang-flag" alt="">Deutsch</button>
+                    <button class="lang-option" data-lang="fr" role="option"><img src="/static/flags/fr.svg" class="lang-flag" alt="">Français</button>
+                    <button class="lang-option" data-lang="it" role="option"><img src="/static/flags/it.svg" class="lang-flag" alt="">Italiano</button>
+                    <button class="lang-option" data-lang="pl" role="option"><img src="/static/flags/pl.svg" class="lang-flag" alt="">Polski</button>
+                    <button class="lang-option" data-lang="uk" role="option"><img src="/static/flags/ua.svg" class="lang-flag" alt="">Українська</button>
+                    <button class="lang-option" data-lang="nl" role="option"><img src="/static/flags/nl.svg" class="lang-flag" alt="">Nederlands</button>
+                    <button class="lang-option" data-lang="ro" role="option"><img src="/static/flags/ro.svg" class="lang-flag" alt="">Română</button>
+                    <button class="lang-option" data-lang="el" role="option"><img src="/static/flags/gr.svg" class="lang-flag" alt="">Ελληνικά</button>
+                    <button class="lang-option" data-lang="hu" role="option"><img src="/static/flags/hu.svg" class="lang-flag" alt="">Magyar</button>
+                    <button class="lang-option" data-lang="cs" role="option"><img src="/static/flags/cz.svg" class="lang-flag" alt="">Čeština</button>
+                    <button class="lang-option" data-lang="sv" role="option"><img src="/static/flags/se.svg" class="lang-flag" alt="">Svenska</button>
+                    <button class="lang-option" data-lang="bg" role="option"><img src="/static/flags/bg.svg" class="lang-flag" alt="">Български</button>
+                    <button class="lang-option" data-lang="da" role="option"><img src="/static/flags/dk.svg" class="lang-flag" alt="">Dansk</button>
+                    <button class="lang-option" data-lang="fi" role="option"><img src="/static/flags/fi.svg" class="lang-flag" alt="">Suomi</button>
+                    <button class="lang-option" data-lang="no" role="option"><img src="/static/flags/no.svg" class="lang-flag" alt="">Norsk</button>
+                    <button class="lang-option" data-lang="sk" role="option"><img src="/static/flags/sk.svg" class="lang-flag" alt="">Slovenčina</button>
+                    <button class="lang-option" data-lang="hr" role="option"><img src="/static/flags/hr.svg" class="lang-flag" alt="">Hrvatski</button>
+                    <button class="lang-option" data-lang="lt" role="option"><img src="/static/flags/lt.svg" class="lang-flag" alt="">Lietuvių</button>
+                    <button class="lang-option" data-lang="sl" role="option"><img src="/static/flags/si.svg" class="lang-flag" alt="">Slovenščina</button>
+                    <button class="lang-option" data-lang="lv" role="option"><img src="/static/flags/lv.svg" class="lang-flag" alt="">Latviešu</button>
+                    <button class="lang-option" data-lang="et" role="option"><img src="/static/flags/ee.svg" class="lang-flag" alt="">Eesti</button>
+                    <button class="lang-option" data-lang="mt" role="option"><img src="/static/flags/mt.svg" class="lang-flag" alt="">Malti</button>
+                    <button class="lang-option" data-lang="is" role="option"><img src="/static/flags/is.svg" class="lang-flag" alt="">Íslenska</button>
+                    <button class="lang-option" data-lang="ga" role="option"><img src="/static/flags/ie.svg" class="lang-flag" alt="">Gaeilge</button>
+                </div>
+            </div>
+            <button id="btn-connect-screen-theme" class="btn-theme" aria-label="Bytt tema" data-i18n-aria="themeLabel">🌙</button>
+            <button id="btn-connect-screen-help" class="btn-help" aria-label="Hjelp" data-i18n-aria="helpLabel" data-i18n-title="helpLabel">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <circle cx="12" cy="12" r="10"/>
+                    <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/>
+                    <line x1="12" y1="17" x2="12.01" y2="17"/>
+                </svg>
+            </button>
+        </div>
+        <div class="connect-box">
+            <div>
+                <div class="title-row">
+                    <img class="title-icon" src="logo-96.png" width="52" height="52" alt="" aria-hidden="true">
+                    <h1 data-i18n="title">NullPost</h1>
+                </div>
+                <p class="subtitle" data-i18n="subtitle">Sikker, kryptert kanal mellom to datamaskiner</p>
+            </div>
+
+            <div class="connect-form">
+                <label for="password" class="sr-only" data-i18n="passwordLabel">Delt passord</label>
+                <input
+                    type="password"
+                    id="password"
+                    data-i18n-placeholder="passwordPlaceholder"
+                    placeholder="Delt passord"
+                    aria-describedby="connect-error security-note"
+                    autocomplete="off"
+                    autocorrect="off"
+                    autocapitalize="off"
+                    spellcheck="false"
+                >
+                <div id="password-strength" class="password-strength hidden">
+                    <div class="strength-bar"><div class="strength-fill"></div></div>
+                    <span class="strength-label"></span>
+                </div>
+                <p id="connect-error" class="connect-error hidden" role="alert" aria-live="assertive"></p>
+                <div class="mode-toggle" role="radiogroup" aria-label="Connection mode">
+                    <label class="mode-option">
+                        <input type="radio" name="conn-mode" value="relay" checked>
+                        <span data-i18n="modeRelay">Relé (server)</span>
+                    </label>
+                    <label class="mode-option">
+                        <input type="radio" name="conn-mode" value="p2p">
+                        <span data-i18n="modeP2P">Direkte (P2P)</span>
+                    </label>
+                </div>
+                <p id="mode-description" class="mode-description"></p>
+                <button id="btn-connect">
+                    <span id="connect-spinner" class="hidden" aria-hidden="true"></span>
+                    <span data-i18n="connect">Koble til</span>
+                </button>
+                <div id="qr-area" class="qr-area hidden">
+                    <canvas id="qr-canvas" width="160" height="160"></canvas>
+                    <p class="qr-hint" data-i18n="qrHint">La motparten skanne for å dele passordet</p>
+                    <button id="btn-copy-link" class="btn-copy-link" data-i18n="copyLink">Kopier lenke</button>
+                </div>
+            </div>
+
+            <details class="security-note-details">
+                <summary class="security-note-summary"><span data-i18n="securityNoteLabel">Sikkerhetsinformasjon</span></summary>
+                <p id="security-note" class="security-note" data-i18n="securityNote">
+                    Passordet forlater aldri enheten din. Alle meldinger krypteres i nettleseren din
+                    før de videresendes — serveren kan ikke lese dem. Etter tilkobling, bekreft
+                    fingeravtrykket med samtalepartneren muntlig før du sender sensitiv informasjon.
+                </p>
+            </details>
+        </div>
+        <footer class="connect-footer">
+            <a href="https://nullpost.eu" title="NullPost.eu">NullPost.eu</a>
+            |
+            <a href="https://github.com/Norlunn/NullPost" target="_blank" rel="noopener noreferrer" aria-label="GitHub">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                    <path d="M12 2C6.477 2 2 6.477 2 12c0 4.418 2.865 8.166 6.839 9.489.5.092.682-.217.682-.482 0-.237-.009-.868-.013-1.703-2.782.604-3.369-1.342-3.369-1.342-.454-1.154-1.11-1.462-1.11-1.462-.908-.62.069-.608.069-.608 1.003.07 1.531 1.03 1.531 1.03.892 1.529 2.341 1.087 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.11-4.555-4.943 0-1.091.39-1.984 1.029-2.683-.103-.253-.446-1.27.098-2.647 0 0 .84-.269 2.75 1.025A9.578 9.578 0 0 1 12 6.836a9.59 9.59 0 0 1 2.504.337c1.909-1.294 2.747-1.025 2.747-1.025.546 1.377.203 2.394.1 2.647.64.699 1.028 1.592 1.028 2.683 0 3.842-2.339 4.687-4.566 4.935.359.309.678.919.678 1.852 0 1.336-.012 2.415-.012 2.743 0 .267.18.578.688.48C19.138 20.163 22 16.418 22 12c0-5.523-4.477-10-10-10z"/>
+                </svg>
+                GitHub
+            </a>
+        </footer>
+    </main>
+
+    <!-- Channel screen -->
+    <div id="screen-channel" class="screen">
+
+        <header class="channel-header">
+            <div class="status" role="status" aria-live="polite">
+                <span id="status-dot" class="dot waiting" aria-hidden="true"></span>
+                <span id="status-text" data-i18n="statusWaiting">Venter på samtalepartner...</span>
+            </div>
+            <span id="mode-badge" class="mode-badge" hidden></span>
+
+            <div id="fingerprint-area" class="fingerprint" data-i18n-html="fingerprintLabel">
+                Bekreft med samtalepartner: <strong id="fingerprint-value"></strong>
+            </div>
+
+            <div class="lang-picker">
+                <button id="btn-channel-lang" class="btn-lang-globe" aria-label="Bytt språk" data-i18n-aria="langLabel" aria-haspopup="listbox" aria-expanded="false">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <circle cx="12" cy="12" r="10"/>
+                        <line x1="2" y1="12" x2="22" y2="12"/>
+                        <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
+                    </svg>
+                </button>
+                <div id="lang-menu-channel" class="lang-menu" hidden role="listbox">
+                    <button class="lang-option" data-lang="es" role="option"><img src="/static/flags/es.svg" class="lang-flag" alt="">Español</button>
+                    <button class="lang-option" data-lang="en" role="option"><img src="/static/flags/gb.svg" class="lang-flag" alt="">English</button>
+                    <button class="lang-option" data-lang="pt" role="option"><img src="/static/flags/pt.svg" class="lang-flag" alt="">Português</button>
+                    <button class="lang-option" data-lang="ru" role="option"><img src="/static/flags/ru.svg" class="lang-flag" alt="">Русский</button>
+                    <button class="lang-option" data-lang="de" role="option"><img src="/static/flags/de.svg" class="lang-flag" alt="">Deutsch</button>
+                    <button class="lang-option" data-lang="fr" role="option"><img src="/static/flags/fr.svg" class="lang-flag" alt="">Français</button>
+                    <button class="lang-option" data-lang="it" role="option"><img src="/static/flags/it.svg" class="lang-flag" alt="">Italiano</button>
+                    <button class="lang-option" data-lang="pl" role="option"><img src="/static/flags/pl.svg" class="lang-flag" alt="">Polski</button>
+                    <button class="lang-option" data-lang="uk" role="option"><img src="/static/flags/ua.svg" class="lang-flag" alt="">Українська</button>
+                    <button class="lang-option" data-lang="nl" role="option"><img src="/static/flags/nl.svg" class="lang-flag" alt="">Nederlands</button>
+                    <button class="lang-option" data-lang="ro" role="option"><img src="/static/flags/ro.svg" class="lang-flag" alt="">Română</button>
+                    <button class="lang-option" data-lang="el" role="option"><img src="/static/flags/gr.svg" class="lang-flag" alt="">Ελληνικά</button>
+                    <button class="lang-option" data-lang="hu" role="option"><img src="/static/flags/hu.svg" class="lang-flag" alt="">Magyar</button>
+                    <button class="lang-option" data-lang="cs" role="option"><img src="/static/flags/cz.svg" class="lang-flag" alt="">Čeština</button>
+                    <button class="lang-option" data-lang="sv" role="option"><img src="/static/flags/se.svg" class="lang-flag" alt="">Svenska</button>
+                    <button class="lang-option" data-lang="bg" role="option"><img src="/static/flags/bg.svg" class="lang-flag" alt="">Български</button>
+                    <button class="lang-option" data-lang="da" role="option"><img src="/static/flags/dk.svg" class="lang-flag" alt="">Dansk</button>
+                    <button class="lang-option" data-lang="fi" role="option"><img src="/static/flags/fi.svg" class="lang-flag" alt="">Suomi</button>
+                    <button class="lang-option" data-lang="no" role="option"><img src="/static/flags/no.svg" class="lang-flag" alt="">Norsk</button>
+                    <button class="lang-option" data-lang="sk" role="option"><img src="/static/flags/sk.svg" class="lang-flag" alt="">Slovenčina</button>
+                    <button class="lang-option" data-lang="hr" role="option"><img src="/static/flags/hr.svg" class="lang-flag" alt="">Hrvatski</button>
+                    <button class="lang-option" data-lang="lt" role="option"><img src="/static/flags/lt.svg" class="lang-flag" alt="">Lietuvių</button>
+                    <button class="lang-option" data-lang="sl" role="option"><img src="/static/flags/si.svg" class="lang-flag" alt="">Slovenščina</button>
+                    <button class="lang-option" data-lang="lv" role="option"><img src="/static/flags/lv.svg" class="lang-flag" alt="">Latviešu</button>
+                    <button class="lang-option" data-lang="et" role="option"><img src="/static/flags/ee.svg" class="lang-flag" alt="">Eesti</button>
+                    <button class="lang-option" data-lang="mt" role="option"><img src="/static/flags/mt.svg" class="lang-flag" alt="">Malti</button>
+                    <button class="lang-option" data-lang="is" role="option"><img src="/static/flags/is.svg" class="lang-flag" alt="">Íslenska</button>
+                    <button class="lang-option" data-lang="ga" role="option"><img src="/static/flags/ie.svg" class="lang-flag" alt="">Gaeilge</button>
+                </div>
+            </div>
+            <button id="btn-channel-theme" class="btn-theme" aria-label="Bytt tema" data-i18n-aria="themeLabel" data-i18n-title="themeLabel">🌙</button>
+            <button id="btn-channel-help" class="btn-help" aria-label="Hjelp" data-i18n-aria="helpLabel" data-i18n-title="helpLabel">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <circle cx="12" cy="12" r="10"/>
+                    <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/>
+                    <line x1="12" y1="17" x2="12.01" y2="17"/>
+                </svg>
+            </button>
+            <button id="btn-disconnect" data-i18n="disconnect">Koble fra</button>
+        </header>
+
+        <div id="messages" role="log" aria-live="polite" aria-label="Meldinger" data-i18n-aria="messagesLabel"></div>
+
+        <div id="typing-indicator" class="typing-indicator hidden" aria-live="polite"></div>
+
+        <div id="drop-overlay" class="drop-overlay hidden">
+            <div class="drop-overlay-content">
+                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.49"/>
+                </svg>
+                <span data-i18n="dropFileHere">Slipp fil(er) her</span>
+            </div>
+        </div>
+
+        <div class="input-area">
+            <input type="file" id="file-input" class="sr-only" multiple>
+            <div class="input-card">
+                <label for="message-input" class="sr-only" data-i18n="messageLabel">Melding</label>
+                <textarea
+                    id="message-input"
+                    data-i18n-placeholder="messagePlaceholder"
+                    placeholder="Skriv melding… (Enter for å sende, Shift+Enter for ny linje)"
+                    rows="2"
+                    spellcheck="false"
+                ></textarea>
+                <div class="input-toolbar">
+                    <span class="expiry-label" data-i18n="expiryPrompt">Slett om:</span>
+                    <div class="expiry-picker">
+                        <button id="btn-expiry" class="btn-expiry" aria-label="Utløpstimer" data-i18n-aria="expiryLabel" data-i18n-title="expiryLabel" aria-haspopup="listbox" aria-expanded="false">5m</button>
+                        <div id="expiry-menu" class="expiry-menu" hidden role="listbox">
+                            <button class="expiry-option" data-value="30">30s</button>
+                            <button class="expiry-option" data-value="60">1m</button>
+                            <button class="expiry-option" data-value="300">5m</button>
+                            <button class="expiry-option" data-value="1800">30m</button>
+                            <button class="expiry-option" data-value="3600">1h</button>
+                            <button class="expiry-option" data-value="0">∞</button>
+                        </div>
+                    </div>
+                    <button id="btn-attach" class="btn-attach" data-i18n-aria="attachFile" data-i18n-title="attachFile" aria-label="Legg ved fil" disabled>
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.49"/>
+                        </svg>
+                    </button>
+                    <button id="btn-mask" class="btn-mask" data-i18n-aria="maskToggle" data-i18n-title="maskToggle" aria-label="Mask" aria-pressed="false" disabled>
+                        <svg class="icon-eye" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                            <circle cx="12" cy="12" r="3"/>
+                        </svg>
+                        <svg class="icon-eye-off" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                            <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/>
+                            <line x1="1" y1="1" x2="23" y2="23"/>
+                        </svg>
+                    </button>
+                    <button id="btn-send" data-i18n="send" disabled>Send</button>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Help modal -->
+    <div id="help-overlay" class="help-overlay hidden" aria-hidden="true">
+        <div id="help-modal" class="help-modal" role="dialog" aria-labelledby="help-modal-title">
+            <div class="help-modal-header">
+                <h2 id="help-modal-title" data-i18n="helpTitle">Om NullPost</h2>
+                <button id="btn-help-close" class="btn-help-close" aria-label="Lukk" data-i18n-aria="helpClose">&times;</button>
+            </div>
+            <div class="help-modal-body">
+                <section>
+                    <h3 data-i18n="helpAboutTitle">Om prosjektet</h3>
+                    <p data-i18n="helpAboutText"></p>
+                </section>
+                <section>
+                    <h3 data-i18n="helpPrivacyTitle">Personvern</h3>
+                    <p data-i18n="helpPrivacyText"></p>
+                </section>
+                <section>
+                    <h3 data-i18n="helpSecurityTitle">Sikkerhet</h3>
+                    <p data-i18n="helpSecurityText"></p>
+                </section>
+                <section>
+                    <h3 data-i18n="helpLinksTitle">Kildekode og drift</h3>
+                    <p data-i18n="helpLinksText"></p>
+                    <p><a href="https://github.com/Norlunn/NullPost" target="_blank" rel="noopener noreferrer">GitHub →</a></p>
+                </section>
+            </div>
+        </div>
+    </div>
+
+    <script src="qrcodegen.js"></script>
+    <script type="module" src="app.js"></script>
+</body>
+</html>

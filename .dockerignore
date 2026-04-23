@@ -1,0 +1,10 @@
+__pycache__/
+*.pyc
+.pytest_cache/
+AGENTS.md
+tests/
+fly.toml
+.gitignore
+.env
+.env.*
+README.md
