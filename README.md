@@ -14,6 +14,8 @@ Self-hosted, real-time secure text and file transfer. Two browsers connect using
 
 **Two people only.** Each channel supports exactly two participants — no group chat.
 
+Hosted instance: [nullpost.eu](https://nullpost.eu)
+
 ## Requirements
 
 - Python 3.10+
