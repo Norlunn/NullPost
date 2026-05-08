@@ -260,6 +260,58 @@ button:disabled {
     display: none;
 }
 
+.diagnostics-panel {
+    margin-top: -2px;
+    padding: 10px 12px 12px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: color-mix(in srgb, var(--surface2) 76%, transparent);
+}
+
+.diagnostics-panel.hidden {
+    display: none;
+}
+
+.diagnostics-summary {
+    cursor: pointer;
+    font: 600 0.78rem/1.2 var(--mono);
+    color: var(--text);
+    list-style: none;
+}
+
+.diagnostics-summary::-webkit-details-marker {
+    display: none;
+}
+
+.diagnostics-hint {
+    margin: 8px 0 10px;
+    font-size: 0.7rem;
+    line-height: 1.45;
+    color: var(--text-muted);
+}
+
+.diagnostics-actions {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-bottom: 10px;
+}
+
+.diagnostics-log {
+    min-height: 108px;
+    max-height: 220px;
+    overflow: auto;
+    margin: 0;
+    padding: 10px;
+    border-radius: 6px;
+    border: 1px solid var(--border);
+    background: color-mix(in srgb, var(--bg) 84%, transparent);
+    color: var(--text);
+    font: 0.68rem/1.45 var(--mono);
+    white-space: pre-wrap;
+    word-break: break-word;
+}
+
 /* --- Password strength --- */
 
 .password-strength {

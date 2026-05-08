@@ -100,6 +100,17 @@
                     <span class="strength-label"></span>
                 </div>
                 <p id="connect-error" class="connect-error hidden" role="alert" aria-live="assertive"></p>
+                <details id="diagnostics-panel" class="diagnostics-panel hidden" open>
+                    <summary class="diagnostics-summary" data-i18n="diagnosticsLabel">Diagnostics</summary>
+                    <p class="diagnostics-hint" data-i18n="diagnosticsHint">
+                        Local handshake diagnostics only. Passwords, messages, and keys are never logged.
+                    </p>
+                    <div class="diagnostics-actions">
+                        <button id="btn-copy-diagnostics" type="button" class="btn-copy-link" data-i18n="copyDiagnostics">Copy diagnostics</button>
+                        <button id="btn-clear-diagnostics" type="button" class="btn-copy-link" data-i18n="clearDiagnostics">Clear</button>
+                    </div>
+                    <pre id="diagnostics-log" class="diagnostics-log" aria-live="polite"></pre>
+                </details>
                 <div class="mode-toggle" role="radiogroup" aria-label="Connection mode">
                     <label class="mode-option">
                         <input type="radio" name="conn-mode" value="relay" checked>

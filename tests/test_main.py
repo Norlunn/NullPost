@@ -156,6 +156,12 @@ class TestHttpEndpoints:
         assert resp.status_code == 200
         assert 'format: "spki"' in resp.text
 
+    def test_connect_screen_contains_diagnostics_panel(self):
+        resp = client.get("/static/index.html")
+        assert resp.status_code == 200
+        assert 'id="diagnostics-panel"' in resp.text
+        assert 'id="btn-copy-diagnostics"' in resp.text
+
 
 # --- WebSocket ---
 

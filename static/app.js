@@ -62,6 +62,10 @@ let maskMessage = false;
 let unreadCount = 0;
 let notificationsMuted = false;
 let notificationAudioContext = null;
+let handshakeDiagnostics = [];
+let debugTelemetryEnabled = false;
+
+const HANDSHAKE_DIAGNOSTIC_LIMIT = 200;
 
 // --- DOM references ---
 
@@ -70,6 +74,10 @@ const screenChannel = document.getElementById("screen-channel");
 const passwordInput = document.getElementById("password");
 const btnConnect = document.getElementById("btn-connect");
 const connectError = document.getElementById("connect-error");
+const diagnosticsPanel = document.getElementById("diagnostics-panel");
+const diagnosticsLog = document.getElementById("diagnostics-log");
+const btnCopyDiagnostics = document.getElementById("btn-copy-diagnostics");
+const btnClearDiagnostics = document.getElementById("btn-clear-diagnostics");
 const connectSpinner = document.getElementById("connect-spinner");
 const statusDot = document.getElementById("status-dot");
 const statusText = document.getElementById("status-text");
@@ -169,6 +177,77 @@ function openLangMenu(menu, btn) {
 // --- UI helpers ---
 
 let currentStatusState = null;
+
+function hasDebugQueryFlag(fragment) {
+    if (!fragment) return false;
+    const raw = fragment.startsWith("?") || fragment.startsWith("#") ? fragment.slice(1) : fragment;
+    return new URLSearchParams(raw).get("debug") === "1";
+}
+
+function syncDiagnosticsPanel() {
+    diagnosticsPanel.classList.toggle("hidden", !debugTelemetryEnabled);
+}
+
+function formatDiagnosticError(error) {
+    if (!error) return "unknown";
+    if (typeof error === "string") return error;
+    const name = typeof error.name === "string" && error.name ? error.name : "Error";
+    const message = typeof error.message === "string" && error.message ? error.message : "";
+    return message ? `${name}: ${message}` : name;
+}
+
+function formatDiagnosticDetails(details) {
+    return Object.entries(details)
+        .filter(([, value]) => value !== undefined && value !== null && value !== "")
+        .map(([key, value]) => `${key}=${String(value)}`)
+        .join(" ");
+}
+
+function renderHandshakeDiagnostics() {
+    diagnosticsLog.textContent = handshakeDiagnostics.join("\n");
+    diagnosticsLog.scrollTop = diagnosticsLog.scrollHeight;
+}
+
+function recordHandshakeDiagnostic(event, details = {}) {
+    if (!debugTelemetryEnabled) return;
+    const timestamp = new Date().toISOString();
+    const suffix = formatDiagnosticDetails(details);
+    handshakeDiagnostics.push(suffix ? `[${timestamp}] ${event} ${suffix}` : `[${timestamp}] ${event}`);
+    if (handshakeDiagnostics.length > HANDSHAKE_DIAGNOSTIC_LIMIT) {
+        handshakeDiagnostics = handshakeDiagnostics.slice(-HANDSHAKE_DIAGNOSTIC_LIMIT);
+    }
+    renderHandshakeDiagnostics();
+}
+
+function clearHandshakeDiagnostics() {
+    handshakeDiagnostics = [];
+    renderHandshakeDiagnostics();
+}
+
+async function copyText(text) {
+    if (navigator.clipboard?.writeText) {
+        await navigator.clipboard.writeText(text);
+        return;
+    }
+    const input = document.createElement("textarea");
+    input.value = text;
+    input.setAttribute("readonly", "");
+    input.style.position = "fixed";
+    input.style.opacity = "0";
+    document.body.append(input);
+    input.select();
+    document.execCommand("copy");
+    input.remove();
+}
+
+async function copyHandshakeDiagnostics() {
+    try {
+        await copyText(handshakeDiagnostics.join("\n"));
+        recordHandshakeDiagnostic("diagnostics.copy_success");
+    } catch (error) {
+        recordHandshakeDiagnostic("diagnostics.copy_failed", { error: formatDiagnosticError(error) });
+    }
+}
 
 function updateDocumentTitle() {
     const baseTitle = t("title");
@@ -1069,11 +1148,17 @@ function openWebSocket(channelId) {
         ws.close();
     }
 
+    recordHandshakeDiagnostic("ws.create");
     ws = new WebSocket(buildWsUrl(channelId));
 
+    ws.addEventListener("open", () => {
+        recordHandshakeDiagnostic("ws.open");
+    });
     ws.addEventListener("message", handleMessage);
     ws.addEventListener("close", handleClose);
-    ws.addEventListener("error", () => {});
+    ws.addEventListener("error", () => {
+        recordHandshakeDiagnostic("ws.error");
+    });
 }
 
 async function handleMessage(event) {
@@ -1085,6 +1170,7 @@ async function handleMessage(event) {
     }
 
     if (msg.type === "status") {
+        recordHandshakeDiagnostic("ws.status", { status: msg.status });
         switch (msg.status) {
             case "waiting":
                 isFirstPeer = true;
@@ -1097,9 +1183,14 @@ async function handleMessage(event) {
                 if (Notification.permission === "granted" && document.visibilityState === "hidden") {
                     new Notification(t("notifTitle"), { body: t("notifBody") });
                 }
-                await sendKeyExchange();
+                const keyExchangeSent = await sendKeyExchange();
+                if (!keyExchangeSent) {
+                    break;
+                }
+                recordHandshakeDiagnostic("key_exchange.timeout_armed", { timeoutMs: KEY_EXCHANGE_TIMEOUT_MS });
                 keyExchangeTimeout = setTimeout(() => {
                     if (!keyExchangeComplete) {
+                        recordHandshakeDiagnostic("key_exchange.timeout_fired");
                         appendSystemMessage(t("sysKeyExchangeTimeout"), {i18nKey: "sysKeyExchangeTimeout"});
                         disconnectCleanup();
                         showScreen("connect");
@@ -1147,6 +1238,7 @@ async function handleMessage(event) {
     }
 
     if (msg.type === "key_exchange") {
+        recordHandshakeDiagnostic("key_exchange.receive");
         await handleKeyExchange(msg);
         return;
     }
@@ -1231,47 +1323,72 @@ function handleDecryptedPayload(plaintext) {
 async function sendKeyExchange() {
     try {
         const packet = await exportPublicKeyPacket(ephemeralKeyPair.publicKey);
+        recordHandshakeDiagnostic("key_exchange.export_success", { format: packet.format, version: packet.v });
         const encrypted = await encrypt(passwordKey, JSON.stringify(packet));
         ws.send(JSON.stringify({ type: "key_exchange", data: encrypted.data, iv: encrypted.iv }));
-    } catch {
+        recordHandshakeDiagnostic("key_exchange.send_success");
+        return true;
+    } catch (error) {
+        recordHandshakeDiagnostic("key_exchange.send_failed", { error: formatDiagnosticError(error) });
         appendSystemMessage(t("sysKeyExchangeSendFailed"), {i18nKey: "sysKeyExchangeSendFailed"});
         disconnectCleanup();
         showScreen("connect");
         showConnectError(t("errKeyExchangeFailed"));
+        return false;
     }
 }
 
 async function importPeerKeyExchange(data, iv) {
     try {
         const plaintext = await decrypt(passwordKey, data, iv);
-        return await importPublicKeyPacket(JSON.parse(plaintext));
-    } catch {}
-
-    const peerPubKeyBytes = await decryptBytes(passwordKey, data, iv);
-    if (peerPubKeyBytes.length !== 65 || peerPubKeyBytes[0] !== 0x04) {
-        throw new Error("Invalid public key");
+        const packet = JSON.parse(plaintext);
+        recordHandshakeDiagnostic("key_exchange.packet_decrypt_success", {
+            format: packet?.format,
+            version: packet?.v
+        });
+        const importedKey = await importPublicKeyPacket(packet);
+        recordHandshakeDiagnostic("key_exchange.import_success", { path: "packet", format: packet.format });
+        return importedKey;
+    } catch (error) {
+        recordHandshakeDiagnostic("key_exchange.packet_path_failed", { error: formatDiagnosticError(error) });
     }
-    return importPublicKey(peerPubKeyBytes);
+
+    try {
+        const peerPubKeyBytes = await decryptBytes(passwordKey, data, iv);
+        if (peerPubKeyBytes.length !== 65 || peerPubKeyBytes[0] !== 0x04) {
+            throw new Error("Invalid public key");
+        }
+        const importedKey = await importPublicKey(peerPubKeyBytes);
+        recordHandshakeDiagnostic("key_exchange.import_success", { path: "legacy_raw", bytes: peerPubKeyBytes.length });
+        return importedKey;
+    } catch (error) {
+        recordHandshakeDiagnostic("key_exchange.legacy_raw_failed", { error: formatDiagnosticError(error) });
+        throw error;
+    }
 }
 
 async function handleKeyExchange(msg) {
     if (keyExchangeComplete) return;
     try {
         const peerPublicKey = await importPeerKeyExchange(msg.data, msg.iv);
+        recordHandshakeDiagnostic("key_exchange.peer_key_ready");
         const { sessionKey: sk, sessionFingerprint } =
             await deriveSessionKey(ephemeralKeyPair.privateKey, peerPublicKey);
+        recordHandshakeDiagnostic("session_key.derive_success");
 
         sessionKey = sk;
         keyExchangeComplete = true;
         ephemeralKeyPair = null;
         clearTimeout(keyExchangeTimeout);
         keyExchangeTimeout = null;
+        recordHandshakeDiagnostic("key_exchange.complete");
 
         fingerprintValue.textContent = sessionFingerprint;
         setStatus("connected");
         appendSystemMessage(t("sysKeysExchanged"), {i18nKey: "sysKeysExchanged"});
         if (p2pMode) startP2PNegotiation();
-    } catch {
+    } catch (error) {
+        recordHandshakeDiagnostic("key_exchange.handle_failed", { error: formatDiagnosticError(error) });
         appendSystemMessage(t("sysKeyExchangeFailed"), {i18nKey: "sysKeyExchangeFailed"});
         disconnectCleanup();
         showScreen("connect");
@@ -1280,6 +1397,11 @@ async function handleKeyExchange(msg) {
 }
 
 function handleClose(event) {
+    recordHandshakeDiagnostic("ws.close", {
+        code: event.code,
+        clean: event.wasClean,
+        reason: event.reason || "none"
+    });
     if (!event.wasClean && savedChannelId) {
         scheduleReconnect();
     }
@@ -1287,15 +1409,23 @@ function handleClose(event) {
 
 function scheduleReconnect() {
     if (reconnectAttempts >= MAX_RECONNECT_ATTEMPTS) {
+        recordHandshakeDiagnostic("reconnect.exhausted", { attempts: reconnectAttempts });
         setStatus("disconnected");
         appendSystemMessage(t("sysReconnectFailed"), {i18nKey: "sysReconnectFailed"});
         return;
     }
     const delay = RECONNECT_BASE_DELAY_MS * Math.pow(2, reconnectAttempts);
     reconnectAttempts++;
+    recordHandshakeDiagnostic("reconnect.scheduled", { attempt: reconnectAttempts, delayMs: delay });
     setStatus("reconnecting");
     reconnectTimer = setTimeout(async () => {
-        ephemeralKeyPair = await generateEphemeralKeyPair();
+        try {
+            ephemeralKeyPair = await generateEphemeralKeyPair();
+            recordHandshakeDiagnostic("reconnect.keygen_success", { attempt: reconnectAttempts });
+        } catch (error) {
+            recordHandshakeDiagnostic("reconnect.keygen_failed", { error: formatDiagnosticError(error) });
+            throw error;
+        }
         sessionKey = null;
         keyExchangeComplete = false;
         sendAborted = false;
@@ -1318,10 +1448,16 @@ function scheduleReconnect() {
 // --- Connect flow ---
 
 async function fetchSalt() {
-    if (linkSalt) return linkSalt;
+    if (linkSalt) {
+        recordHandshakeDiagnostic("salt.cache_hit");
+        return linkSalt;
+    }
+    recordHandshakeDiagnostic("salt.fetch_start");
     const res = await fetch("/config");
+    recordHandshakeDiagnostic("salt.fetch_response", { ok: res.ok, status: res.status });
     const data = await res.json();
     linkSalt = data.salt;
+    recordHandshakeDiagnostic("salt.fetch_success");
     return linkSalt;
 }
 
@@ -1339,6 +1475,14 @@ async function connect() {
     const modeEl = document.querySelector('input[name="conn-mode"]:checked');
     p2pMode = modeEl?.value === "p2p";
 
+    clearHandshakeDiagnostics();
+    recordHandshakeDiagnostic("connect.start", {
+        mode: p2pMode ? "p2p" : "relay",
+        visibility: document.visibilityState,
+        focus: document.hasFocus(),
+        secureContext: window.isSecureContext,
+        userAgent: navigator.userAgent
+    });
     clearConnectError();
     setConnecting(true);
     void primeNotificationAudio();
@@ -1351,7 +1495,9 @@ async function connect() {
     try {
         const salt = await fetchSalt();
         derived = await deriveAll(password, salt);
-    } catch {
+        recordHandshakeDiagnostic("derive_all.success");
+    } catch (error) {
+        recordHandshakeDiagnostic("derive_all.failed", { error: formatDiagnosticError(error) });
         setConnecting(false);
         showConnectError(t("errDeriveFailed"));
         return;
@@ -1360,7 +1506,9 @@ async function connect() {
     let kp;
     try {
         kp = await generateEphemeralKeyPair();
-    } catch {
+        recordHandshakeDiagnostic("keypair.generate_success");
+    } catch (error) {
+        recordHandshakeDiagnostic("keypair.generate_failed", { error: formatDiagnosticError(error) });
         setConnecting(false);
         showConnectError(t("errKeygenFailed"));
         return;
@@ -1383,6 +1531,7 @@ async function connect() {
     updateModeBadge();
     setStatus("waiting");
     messagesEl.innerHTML = "";
+    recordHandshakeDiagnostic("connect.ready_for_ws");
     openWebSocket(derived.channelId);
 }
 
@@ -1580,6 +1729,13 @@ btnNotifications.addEventListener("click", () => {
     void primeNotificationAudio();
     renderNotificationsToggle();
 });
+btnCopyDiagnostics.addEventListener("click", () => {
+    void copyHandshakeDiagnostics();
+});
+btnClearDiagnostics.addEventListener("click", () => {
+    clearHandshakeDiagnostics();
+    recordHandshakeDiagnostic("diagnostics.cleared");
+});
 helpOverlay.addEventListener("click", (e) => {
     if (e.target === helpOverlay) closeHelpModal();
 });
@@ -1663,6 +1819,15 @@ for (const radio of modeRadios) {
 }
 
 window.addEventListener("load", async () => {
+    debugTelemetryEnabled = hasDebugQueryFlag(location.search) || hasDebugQueryFlag(location.hash);
+    syncDiagnosticsPanel();
+    if (debugTelemetryEnabled) {
+        recordHandshakeDiagnostic("diagnostics.enabled", {
+            visibility: document.visibilityState,
+            focus: document.hasFocus(),
+            userAgent: navigator.userAgent
+        });
+    }
     const savedTheme = localStorage.getItem("theme");
     const preferLight = savedTheme
         ? savedTheme === "light"
