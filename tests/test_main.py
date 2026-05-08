@@ -173,6 +173,13 @@ class TestHttpEndpoints:
         assert resp.status_code == 200
         assert '"Notification" in window && Notification.permission === "granted"' in resp.text
 
+    def test_connect_footer_uses_flow_layout_on_short_mobile_viewports(self):
+        resp = client.get("/static/style.css")
+        assert resp.status_code == 200
+        css = resp.text.replace("\r\n", "\n")
+        assert "@media (max-width: 480px), (max-height: 700px)" in css
+        assert ".connect-footer {\n        position: static;" in css
+
 
 # --- WebSocket ---
 
