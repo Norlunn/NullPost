@@ -751,6 +751,28 @@ button:disabled {
     color: var(--accent);
 }
 
+.btn-notifications {
+    position: relative;
+}
+
+.btn-notifications.active {
+    border-color: rgba(227, 179, 65, 0.35);
+    color: var(--warning);
+    background: rgba(227, 179, 65, 0.08);
+}
+
+.btn-notifications .icon-bell-off {
+    display: none;
+}
+
+.btn-notifications.active .icon-bell-on {
+    display: none;
+}
+
+.btn-notifications.active .icon-bell-off {
+    display: block;
+}
+
 /* --- Help modal --- */
 
 .help-overlay {

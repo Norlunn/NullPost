@@ -146,6 +146,11 @@ class TestHttpEndpoints:
         assert resp.status_code == 200
         assert "application/javascript" in resp.headers["content-type"]
 
+    def test_channel_header_contains_notifications_toggle(self):
+        resp = client.get("/static/index.html")
+        assert resp.status_code == 200
+        assert 'id="btn-notifications"' in resp.text
+
 
 # --- WebSocket ---
 

@@ -59,6 +59,9 @@ let shareLinkGen = 0;
 let shareLinkTimer = null;
 let messageExpiry = 300;
 let maskMessage = false;
+let unreadCount = 0;
+let notificationsMuted = false;
+let notificationAudioContext = null;
 
 // --- DOM references ---
 
@@ -102,6 +105,7 @@ const helpOverlay = document.getElementById("help-overlay");
 const btnHelpClose = document.getElementById("btn-help-close");
 const btnConnectScreenHelp = document.getElementById("btn-connect-screen-help");
 const btnChannelHelp = document.getElementById("btn-channel-help");
+const btnNotifications = document.getElementById("btn-notifications");
 
 // --- Theme ---
 
@@ -130,7 +134,8 @@ function applyLang(lang) {
     for (const el of document.querySelectorAll(".lang-option")) {
         el.classList.toggle("active", el.dataset.lang === lang);
     }
-    document.title = t("title");
+    updateDocumentTitle();
+    renderNotificationsToggle();
     if (currentStatusState) {
         statusText.textContent = statusLabel(currentStatusState);
     }
@@ -164,6 +169,88 @@ function openLangMenu(menu, btn) {
 // --- UI helpers ---
 
 let currentStatusState = null;
+
+function updateDocumentTitle() {
+    const baseTitle = t("title");
+    document.title = unreadCount > 0 ? `(${unreadCount}) ${baseTitle}` : baseTitle;
+}
+
+function updateNotificationsToggleLabels() {
+    const actionKey = notificationsMuted ? "unmuteNotifications" : "muteNotifications";
+    const stateKey = notificationsMuted ? "notificationsSoundOff" : "notificationsSoundOn";
+    btnNotifications.dataset.i18nAria = actionKey;
+    btnNotifications.dataset.i18nTitle = stateKey;
+    btnNotifications.setAttribute("aria-label", t(actionKey));
+    btnNotifications.title = t(stateKey);
+}
+
+function renderNotificationsToggle() {
+    btnNotifications.classList.toggle("active", notificationsMuted);
+    btnNotifications.setAttribute("aria-pressed", String(notificationsMuted));
+    updateNotificationsToggleLabels();
+}
+
+function shouldNotifyForUnread() {
+    return document.visibilityState !== "visible";
+}
+
+function incrementUnreadCount() {
+    unreadCount++;
+    updateDocumentTitle();
+}
+
+function clearUnreadCount() {
+    unreadCount = 0;
+    updateDocumentTitle();
+}
+
+async function getNotificationAudioContext() {
+    const AudioContextCtor = window.AudioContext || window.webkitAudioContext;
+    if (!AudioContextCtor) return null;
+    if (!notificationAudioContext || notificationAudioContext.state === "closed") {
+        notificationAudioContext = new AudioContextCtor();
+    }
+    return notificationAudioContext;
+}
+
+async function primeNotificationAudio() {
+    try {
+        const ctx = await getNotificationAudioContext();
+        if (ctx && ctx.state === "suspended") {
+            await ctx.resume();
+        }
+    } catch {}
+}
+
+async function playNotificationSound() {
+    if (notificationsMuted || !shouldNotifyForUnread()) return;
+    try {
+        const ctx = await getNotificationAudioContext();
+        if (!ctx) return;
+        if (ctx.state === "suspended") {
+            await ctx.resume();
+        }
+        const now = ctx.currentTime;
+        const oscillator = ctx.createOscillator();
+        const gain = ctx.createGain();
+        oscillator.type = "sine";
+        oscillator.frequency.setValueAtTime(880, now);
+        oscillator.frequency.exponentialRampToValueAtTime(660, now + 0.16);
+        gain.gain.setValueAtTime(0.0001, now);
+        gain.gain.exponentialRampToValueAtTime(0.045, now + 0.01);
+        gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.18);
+        oscillator.connect(gain);
+        gain.connect(ctx.destination);
+        oscillator.start(now);
+        oscillator.stop(now + 0.18);
+    } catch {}
+}
+
+async function notifyUnreadActivity() {
+    if (!shouldNotifyForUnread()) return;
+    incrementUnreadCount();
+    await playNotificationSound();
+}
 
 function estimatePasswordStrength(password) {
     if (!password) return "weak";
@@ -789,6 +876,7 @@ function handleFileChunk(parsed) {
         receivedFiles.set(fileId, entry.ui.getWrap());
         if (entry.exp > 0) scheduleExpiry(entry.ui.getWrap(), entry.exp);
         incomingFiles.delete(fileId);
+        void notifyUnreadActivity();
     }
 }
 
@@ -1133,8 +1221,10 @@ function handleDecryptedPayload(plaintext) {
         const wrap = appendMessage(parsed.m, "received", parsed.n, parsed.mask === true);
         if (parsed.exp > 0) scheduleExpiry(wrap, parsed.exp);
         sendMsgAck(parsed.n);
+        void notifyUnreadActivity();
     } else {
         appendMessage(plaintext, "received");
+        void notifyUnreadActivity();
     }
 }
 
@@ -1251,6 +1341,7 @@ async function connect() {
 
     clearConnectError();
     setConnecting(true);
+    void primeNotificationAudio();
 
     if ("Notification" in window && Notification.permission === "default") {
         Notification.requestPermission();
@@ -1287,6 +1378,7 @@ async function connect() {
 
     p2pFailed = false;
     setConnecting(false);
+    clearUnreadCount();
     showScreen("channel");
     updateModeBadge();
     setStatus("waiting");
@@ -1315,6 +1407,7 @@ function disconnectCleanup() {
     receivedFiles.clear();
     pendingAcks.length = 0;
     p2pFailed = false;
+    clearUnreadCount();
     hideTypingIndicator();
     rtc.cleanup();
     usingDataChannel = false;
@@ -1479,6 +1572,14 @@ function closeHelpModal() {
 btnConnectScreenHelp.addEventListener("click", openHelpModal);
 btnChannelHelp.addEventListener("click", openHelpModal);
 btnHelpClose.addEventListener("click", closeHelpModal);
+btnNotifications.addEventListener("click", () => {
+    notificationsMuted = !notificationsMuted;
+    try {
+        localStorage.setItem("notificationsMuted", notificationsMuted ? "1" : "0");
+    } catch {}
+    void primeNotificationAudio();
+    renderNotificationsToggle();
+});
 helpOverlay.addEventListener("click", (e) => {
     if (e.target === helpOverlay) closeHelpModal();
 });
@@ -1547,7 +1648,10 @@ btnMask.addEventListener("click", () => {
 });
 
 document.addEventListener("visibilitychange", () => {
-    if (document.visibilityState === "visible") flushPendingAcks();
+    if (document.visibilityState === "visible") {
+        clearUnreadCount();
+        flushPendingAcks();
+    }
 });
 
 for (const radio of modeRadios) {
@@ -1567,6 +1671,13 @@ window.addEventListener("load", async () => {
 
     const savedLang = localStorage.getItem("lang") || DEFAULT_LANG;
     applyLang(savedLang);
+
+    try {
+        notificationsMuted = localStorage.getItem("notificationsMuted") === "1";
+    } catch {
+        notificationsMuted = false;
+    }
+    renderNotificationsToggle();
 
     const savedMode = localStorage.getItem("connMode");
     if (savedMode) {

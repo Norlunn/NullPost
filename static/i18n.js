@@ -89,6 +89,10 @@ const translations = {
         sysP2PFallback: "Direktekobling mislyktes — bruker kryptert relé i stedet.",
         fileTooLargeP2P: "Filen er for stor. Maksimal størrelse er 500 MB.",
         statusConnectedP2P: "Samtalepartner tilkoblet (P2P)",
+        muteNotifications: "Demp varsler",
+        unmuteNotifications: "Slå på varsler",
+        notificationsSoundOn: "Varsellyd på",
+        notificationsSoundOff: "Varsellyd av",
         helpLabel: "Hjelp",
         helpClose: "Lukk",
         helpTitle: "Om NullPost",
@@ -224,6 +228,10 @@ const translations = {
         sysP2PFallback: "Direct connection failed — using encrypted relay instead.",
         fileTooLargeP2P: "File is too large. Maximum size is 500 MB.",
         statusConnectedP2P: "Partner connected (P2P)",
+        muteNotifications: "Mute notification sound",
+        unmuteNotifications: "Unmute notification sound",
+        notificationsSoundOn: "Notification sound on",
+        notificationsSoundOff: "Notification sound off",
         helpLabel: "Help",
         helpClose: "Close",
         helpTitle: "About NullPost",
@@ -3838,7 +3846,7 @@ const HTML_LANGS = { no: "no", en: "en", es: "es", sv: "sv", da: "da", fr: "fr",
 let currentLang = DEFAULT_LANG;
 
 export function t(key) {
-    return translations[currentLang][key] ?? key;
+    return translations[currentLang][key] ?? translations[DEFAULT_LANG][key] ?? key;
 }
 
 export function getLang() {
