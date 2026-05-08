@@ -1,7 +1,7 @@
 {
     "name": "NullPost",
     "short_name": "NullPost",
-    "description": "Secure, encrypted channel between two computers",
+    "description": "Secure, encrypted channel between two devices",
     "start_url": "/static/index.html",
     "display": "standalone",
     "background_color": "#0d1117",

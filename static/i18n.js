@@ -4,7 +4,7 @@ export const DEFAULT_LANG = "en";
 const translations = {
     no: {
         title: "NullPost",
-        subtitle: "Sikker, kryptert kanal mellom to datamaskiner",
+        subtitle: "Sikker, kryptert kanal mellom to enheter",
         passwordLabel: "Delt passord",
         passwordPlaceholder: "Delt passord",
         connect: "Koble til",
@@ -147,7 +147,7 @@ const translations = {
     },
     en: {
         title: "NullPost",
-        subtitle: "Secure, encrypted channel between two computers",
+        subtitle: "Secure, encrypted channel between two devices",
         passwordLabel: "Shared password",
         passwordPlaceholder: "Shared password",
         connect: "Connect",
@@ -290,7 +290,7 @@ const translations = {
     },
     es: {
         title: "NullPost",
-        subtitle: "Canal seguro y cifrado entre dos ordenadores",
+        subtitle: "Canal seguro y cifrado entre dos dispositivos",
         passwordLabel: "Contraseña compartida",
         passwordPlaceholder: "Contraseña compartida",
         connect: "Conectar",
@@ -427,7 +427,7 @@ const translations = {
     },
     sv: {
         title: "NullPost",
-        subtitle: "Säker, krypterad kanal mellan två datorer",
+        subtitle: "Säker, krypterad kanal mellan två enheter",
         passwordLabel: "Delat lösenord",
         passwordPlaceholder: "Delat lösenord",
         connect: "Anslut",
@@ -563,7 +563,7 @@ const translations = {
     },
     da: {
         title: "NullPost",
-        subtitle: "Sikker, krypteret kanal mellem to computere",
+        subtitle: "Sikker, krypteret kanal mellem to enheder",
         passwordLabel: "Delt adgangskode",
         passwordPlaceholder: "Delt adgangskode",
         connect: "Opret forbindelse",
@@ -699,7 +699,7 @@ const translations = {
     },
     fr: {
         title: "NullPost",
-        subtitle: "Canal sécurisé et chiffré entre deux ordinateurs",
+        subtitle: "Canal sécurisé et chiffré entre deux appareils",
         passwordLabel: "Mot de passe partagé",
         passwordPlaceholder: "Mot de passe partagé",
         connect: "Connecter",
@@ -839,7 +839,7 @@ const translations = {
     },
     de: {
         title: "NullPost",
-        subtitle: "Sicherer, verschlüsselter Kanal zwischen zwei Computern",
+        subtitle: "Sicherer, verschlüsselter Kanal zwischen zwei Geräten",
         passwordLabel: "Gemeinsames Passwort",
         passwordPlaceholder: "Gemeinsames Passwort",
         connect: "Verbinden",
@@ -980,7 +980,7 @@ const translations = {
     },
     pl: {
         title: "NullPost",
-        subtitle: "Bezpieczny, szyfrowany kanał między dwoma komputerami",
+        subtitle: "Bezpieczny, szyfrowany kanał między dwoma urządzeniami",
         passwordLabel: "Wspólne hasło",
         passwordPlaceholder: "Wspólne hasło",
         connect: "Połącz",
@@ -1117,7 +1117,7 @@ const translations = {
     },
     it: {
         title: "NullPost",
-        subtitle: "Canale sicuro e cifrato tra due computer",
+        subtitle: "Canale sicuro e cifrato tra due dispositivi",
         passwordLabel: "Password condivisa",
         passwordPlaceholder: "Password condivisa",
         connect: "Connetti",
@@ -1256,7 +1256,7 @@ const translations = {
     },
     uk: {
         title: "NullPost",
-        subtitle: "Безпечний, зашифрований канал між двома комп'ютерами",
+        subtitle: "Безпечний, зашифрований канал між двома пристроями",
         passwordLabel: "Спільний пароль",
         passwordPlaceholder: "Спільний пароль",
         connect: "Підключитися",
@@ -1392,7 +1392,7 @@ const translations = {
     },
     pt: {
         title: "NullPost",
-        subtitle: "Canal seguro e encriptado entre dois computadores",
+        subtitle: "Canal seguro e encriptado entre dois dispositivos",
         passwordLabel: "Palavra-passe partilhada",
         passwordPlaceholder: "Palavra-passe partilhada",
         connect: "Ligar",
@@ -1526,7 +1526,7 @@ const translations = {
     },
     nl: {
         title: "NullPost",
-        subtitle: "Beveiligd, versleuteld kanaal tussen twee computers",
+        subtitle: "Beveiligd, versleuteld kanaal tussen twee apparaten",
         passwordLabel: "Gedeeld wachtwoord",
         passwordPlaceholder: "Gedeeld wachtwoord",
         connect: "Verbinden",
@@ -1660,7 +1660,7 @@ const translations = {
     },
     ro: {
         title: "NullPost",
-        subtitle: "Canal securizat și criptat între două computere",
+        subtitle: "Canal securizat și criptat între două dispozitive",
         passwordLabel: "Parolă partajată",
         passwordPlaceholder: "Parolă partajată",
         connect: "Conectare",
@@ -1793,7 +1793,7 @@ const translations = {
     },
     ru: {
         title: "NullPost",
-        subtitle: "Защищённый зашифрованный канал между двумя компьютерами",
+        subtitle: "Защищённый зашифрованный канал между двумя устройствами",
         passwordLabel: "Общий пароль",
         passwordPlaceholder: "Общий пароль",
         connect: "Подключиться",
@@ -1926,7 +1926,7 @@ const translations = {
     },
     cs: {
         title: "NullPost",
-        subtitle: "Bezpečný, šifrovaný kanál mezi dvěma počítači",
+        subtitle: "Bezpečný, šifrovaný kanál mezi dvěma zařízeními",
         passwordLabel: "Sdílené heslo",
         passwordPlaceholder: "Sdílené heslo",
         connect: "Připojit",
@@ -2058,7 +2058,7 @@ const translations = {
     },
     el: {
         title: "NullPost",
-        subtitle: "Ασφαλές, κρυπτογραφημένο κανάλι μεταξύ δύο υπολογιστών",
+        subtitle: "Ασφαλές, κρυπτογραφημένο κανάλι μεταξύ δύο συσκευών",
         passwordLabel: "Κοινός κωδικός",
         passwordPlaceholder: "Κοινός κωδικός",
         connect: "Σύνδεση",
@@ -2201,7 +2201,7 @@ const translations = {
     },
     hu: {
         title: "NullPost",
-        subtitle: "Biztonságos, titkosított csatorna két számítógép között",
+        subtitle: "Biztonságos, titkosított csatorna két eszköz között",
         passwordLabel: "Közös jelszó",
         passwordPlaceholder: "Közös jelszó",
         connect: "Kapcsolódás",
@@ -2336,7 +2336,7 @@ const translations = {
     },
     fi: {
         title: "NullPost",
-        subtitle: "Turvallinen, salattu kanava kahden tietokoneen välillä",
+        subtitle: "Turvallinen, salattu kanava kahden laitteen välillä",
         passwordLabel: "Jaettu salasana",
         passwordPlaceholder: "Jaettu salasana",
         connect: "Yhdistä",
@@ -2472,7 +2472,7 @@ const translations = {
     },
     bg: {
         title: "NullPost",
-        subtitle: "Защитен, криптиран канал между два компютъра",
+        subtitle: "Защитен, криптиран канал между две устройства",
         passwordLabel: "Споделена парола",
         passwordPlaceholder: "Споделена парола",
         connect: "Свързване",
@@ -2611,7 +2611,7 @@ const translations = {
     },
     sk: {
         title: "NullPost",
-        subtitle: "Bezpečný, šifrovaný kanál medzi dvoma počítačmi",
+        subtitle: "Bezpečný, šifrovaný kanál medzi dvoma zariadeniami",
         passwordLabel: "Zdieľané heslo",
         passwordPlaceholder: "Zdieľané heslo",
         connect: "Pripojiť",
@@ -2743,7 +2743,7 @@ const translations = {
     },
     hr: {
         title: "NullPost",
-        subtitle: "Siguran, šifrirani kanal između dva računala",
+        subtitle: "Siguran, šifrirani kanal između dva uređaja",
         passwordLabel: "Zajednička lozinka",
         passwordPlaceholder: "Zajednička lozinka",
         connect: "Poveži se",
@@ -2877,7 +2877,7 @@ const translations = {
     },
     ga: {
         title: "NullPost",
-        subtitle: "Cainéal slán, criptithe idir dhá ríomhaire",
+        subtitle: "Cainéal slán, criptithe idir dhá ghléas",
         passwordLabel: "Pasfhocal comhroinnte",
         passwordPlaceholder: "Pasfhocal comhroinnte",
         connect: "Ceangail",
@@ -3019,7 +3019,7 @@ const translations = {
     },
     is: {
         title: "NullPost",
-        subtitle: "Örugg, dulkóðuð rás milli tveggja tölva",
+        subtitle: "Örugg, dulkóðuð rás milli tveggja tækja",
         passwordLabel: "Samnýtt lykilorð",
         passwordPlaceholder: "Samnýtt lykilorð",
         connect: "Tengja",
@@ -3157,7 +3157,7 @@ const translations = {
     },
     lt: {
         title: "NullPost",
-        subtitle: "Saugus, užšifruotas kanalas tarp dviejų kompiuterių",
+        subtitle: "Saugus, užšifruotas kanalas tarp dviejų įrenginių",
         passwordLabel: "Bendras slaptažodis",
         passwordPlaceholder: "Bendras slaptažodis",
         connect: "Prisijungti",
@@ -3296,7 +3296,7 @@ const translations = {
     },
     sl: {
         title: "NullPost",
-        subtitle: "Varen, šifriran kanal med dvema računalnikoma",
+        subtitle: "Varen, šifriran kanal med dvema napravama",
         passwordLabel: "Skupno geslo",
         passwordPlaceholder: "Skupno geslo",
         connect: "Poveži",
@@ -3434,7 +3434,7 @@ const translations = {
     },
     lv: {
         title: "NullPost",
-        subtitle: "Droša, šifrēta kanāls starp diviem datoriem",
+        subtitle: "Drošs, šifrēts kanāls starp divām ierīcēm",
         passwordLabel: "Kopīgā parole",
         passwordPlaceholder: "Kopīgā parole",
         connect: "Savienoties",
@@ -3571,7 +3571,7 @@ const translations = {
     },
     et: {
         title: "NullPost",
-        subtitle: "Turvaline, krüpteeritud kanal kahe arvuti vahel",
+        subtitle: "Turvaline, krüpteeritud kanal kahe seadme vahel",
         passwordLabel: "Ühine parool",
         passwordPlaceholder: "Ühine parool",
         connect: "Ühenda",
@@ -3706,7 +3706,7 @@ const translations = {
     },
     mt: {
         title: "NullPost",
-        subtitle: "Kanal sigur u kriptat bejn żewġ kompjuters",
+        subtitle: "Kanal sigur u kriptat bejn żewġ apparati",
         passwordLabel: "Password komuni",
         passwordPlaceholder: "Password komuni",
         connect: "Qabbad",
