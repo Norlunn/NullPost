@@ -137,7 +137,7 @@ class TestHttpEndpoints:
         assert resp.status_code == 200
 
     def test_pwa_icons_served(self):
-        for icon in ("icon-192.png", "icon-512.png"):
+        for icon in ("logo-192.png", "logo-512.png"):
             resp = client.get(f"/static/{icon}")
             assert resp.status_code == 200, f"{icon} not served"
 
