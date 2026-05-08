@@ -162,6 +162,12 @@ class TestHttpEndpoints:
         assert 'id="diagnostics-panel"' in resp.text
         assert 'id="btn-copy-diagnostics"' in resp.text
 
+    def test_app_js_prepares_key_exchange_before_connected_send(self):
+        resp = client.get("/static/app.js")
+        assert resp.status_code == 200
+        assert "prepareKeyExchangePayload" in resp.text
+        assert 'recordHandshakeDiagnostic("key_exchange.prepare_success"' in resp.text
+
 
 # --- WebSocket ---
 

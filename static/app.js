@@ -64,6 +64,9 @@ let notificationsMuted = false;
 let notificationAudioContext = null;
 let handshakeDiagnostics = [];
 let debugTelemetryEnabled = false;
+let preparedKeyExchangePayload = null;
+let preparedKeyExchangeFormat = "";
+let preparedKeyExchangeVersion = null;
 
 const HANDSHAKE_DIAGNOSTIC_LIMIT = 200;
 
@@ -247,6 +250,25 @@ async function copyHandshakeDiagnostics() {
     } catch (error) {
         recordHandshakeDiagnostic("diagnostics.copy_failed", { error: formatDiagnosticError(error) });
     }
+}
+
+async function prepareKeyExchangePayload() {
+    if (!ephemeralKeyPair?.publicKey || !passwordKey) {
+        throw new Error("Handshake material missing");
+    }
+    const packet = await exportPublicKeyPacket(ephemeralKeyPair.publicKey);
+    const encrypted = await encrypt(passwordKey, JSON.stringify(packet));
+    preparedKeyExchangePayload = JSON.stringify({
+        type: "key_exchange",
+        data: encrypted.data,
+        iv: encrypted.iv
+    });
+    preparedKeyExchangeFormat = packet.format;
+    preparedKeyExchangeVersion = packet.v;
+    recordHandshakeDiagnostic("key_exchange.prepare_success", {
+        format: packet.format,
+        version: packet.v
+    });
 }
 
 function updateDocumentTitle() {
@@ -1322,10 +1344,15 @@ function handleDecryptedPayload(plaintext) {
 
 async function sendKeyExchange() {
     try {
-        const packet = await exportPublicKeyPacket(ephemeralKeyPair.publicKey);
-        recordHandshakeDiagnostic("key_exchange.export_success", { format: packet.format, version: packet.v });
-        const encrypted = await encrypt(passwordKey, JSON.stringify(packet));
-        ws.send(JSON.stringify({ type: "key_exchange", data: encrypted.data, iv: encrypted.iv }));
+        if (!preparedKeyExchangePayload) {
+            recordHandshakeDiagnostic("key_exchange.prepare_on_demand");
+            await prepareKeyExchangePayload();
+        }
+        recordHandshakeDiagnostic("key_exchange.export_success", {
+            format: preparedKeyExchangeFormat,
+            version: preparedKeyExchangeVersion
+        });
+        ws.send(preparedKeyExchangePayload);
         recordHandshakeDiagnostic("key_exchange.send_success");
         return true;
     } catch (error) {
@@ -1422,6 +1449,7 @@ function scheduleReconnect() {
         try {
             ephemeralKeyPair = await generateEphemeralKeyPair();
             recordHandshakeDiagnostic("reconnect.keygen_success", { attempt: reconnectAttempts });
+            await prepareKeyExchangePayload();
         } catch (error) {
             recordHandshakeDiagnostic("reconnect.keygen_failed", { error: formatDiagnosticError(error) });
             throw error;
@@ -1507,16 +1535,17 @@ async function connect() {
     try {
         kp = await generateEphemeralKeyPair();
         recordHandshakeDiagnostic("keypair.generate_success");
+        passwordKey = derived.passwordKey;
+        ephemeralKeyPair = kp;
+        await prepareKeyExchangePayload();
     } catch (error) {
         recordHandshakeDiagnostic("keypair.generate_failed", { error: formatDiagnosticError(error) });
         setConnecting(false);
-        showConnectError(t("errKeygenFailed"));
+        showConnectError(t("errKeyExchangeFailed"));
         return;
     }
 
     savedChannelId = derived.channelId;
-    passwordKey = derived.passwordKey;
-    ephemeralKeyPair = kp;
     sessionKey = null;
     keyExchangeComplete = false;
     sendAborted = false;
@@ -1572,6 +1601,9 @@ function disconnectCleanup() {
     passwordKey = null;
     sessionKey = null;
     ephemeralKeyPair = null;
+    preparedKeyExchangePayload = null;
+    preparedKeyExchangeFormat = "";
+    preparedKeyExchangeVersion = null;
     keyExchangeComplete = false;
     savedChannelId = "";
     reconnectAttempts = 0;
