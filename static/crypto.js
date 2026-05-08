@@ -3,6 +3,7 @@
 // This produces independent keys for channel matching, message encryption, and fingerprinting.
 
 const PBKDF2_ITERATIONS = 600_000;
+const PUBLIC_KEY_EXPORT_TIMEOUT_MS = 1500;
 const enc = new TextEncoder();
 const dec = new TextDecoder();
 
@@ -22,6 +23,28 @@ export function fromBase64(str) {
         bytes[i] = binary.charCodeAt(i);
     }
     return bytes;
+}
+
+function fromBase64Url(str) {
+    const padded = str.replace(/-/g, "+").replace(/_/g, "/");
+    return fromBase64(padded + "=".repeat((4 - (padded.length % 4)) % 4));
+}
+
+function withTimeout(promise, timeoutMs, label) {
+    let timer = null;
+    return new Promise((resolve, reject) => {
+        timer = setTimeout(() => reject(new Error(label)), timeoutMs);
+        Promise.resolve(promise).then(
+            (value) => {
+                clearTimeout(timer);
+                resolve(value);
+            },
+            (error) => {
+                clearTimeout(timer);
+                reject(error);
+            }
+        );
+    });
 }
 
 async function pbkdf2MasterKey(password, salt) {
@@ -107,6 +130,81 @@ export async function importPublicKey(rawBytes) {
         true,
         []
     );
+}
+
+function validateRawPublicKey(rawBytes) {
+    if (!(rawBytes instanceof Uint8Array) || rawBytes.length !== 65 || rawBytes[0] !== 0x04) {
+        throw new Error("Invalid public key");
+    }
+}
+
+export async function exportPublicKeyPacket(publicKey) {
+    try {
+        const raw = await withTimeout(
+            crypto.subtle.exportKey("raw", publicKey),
+            PUBLIC_KEY_EXPORT_TIMEOUT_MS,
+            "raw_export_timeout"
+        );
+        return {
+            v: 2,
+            format: "raw",
+            key: toBase64(raw)
+        };
+    } catch {}
+
+    const jwk = await withTimeout(
+        crypto.subtle.exportKey("jwk", publicKey),
+        PUBLIC_KEY_EXPORT_TIMEOUT_MS,
+        "jwk_export_timeout"
+    );
+    if (
+        jwk.kty !== "EC" ||
+        jwk.crv !== "P-256" ||
+        typeof jwk.x !== "string" ||
+        typeof jwk.y !== "string"
+    ) {
+        throw new Error("Invalid exported JWK");
+    }
+    return {
+        v: 2,
+        format: "jwk",
+        key: {
+            kty: "EC",
+            crv: "P-256",
+            x: jwk.x,
+            y: jwk.y
+        }
+    };
+}
+
+export async function importPublicKeyPacket(packet) {
+    if (!packet || packet.v !== 2) {
+        throw new Error("Unsupported key packet");
+    }
+    if (packet.format === "raw" && typeof packet.key === "string") {
+        const rawBytes = fromBase64(packet.key);
+        validateRawPublicKey(rawBytes);
+        return importPublicKey(rawBytes);
+    }
+    if (packet.format === "jwk" && packet.key && typeof packet.key === "object") {
+        const { kty, crv, x, y } = packet.key;
+        if (kty !== "EC" || crv !== "P-256" || typeof x !== "string" || typeof y !== "string") {
+            throw new Error("Invalid JWK public key");
+        }
+        const xBytes = fromBase64Url(x);
+        const yBytes = fromBase64Url(y);
+        if (xBytes.length !== 32 || yBytes.length !== 32) {
+            throw new Error("Invalid JWK public key");
+        }
+        return crypto.subtle.importKey(
+            "jwk",
+            { kty, crv, x, y, ext: true },
+            { name: "ECDH", namedCurve: "P-256" },
+            true,
+            []
+        );
+    }
+    throw new Error("Unsupported key packet");
 }
 
 // ECDH + HKDF → non-extractable AES-256-GCM session key and 48-bit session fingerprint.

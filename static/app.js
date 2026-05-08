@@ -1,7 +1,7 @@
 import {
     deriveAll, encrypt, decrypt,
-    generateEphemeralKeyPair, exportPublicKey, importPublicKey,
-    deriveSessionKey, encryptBytes, decryptBytes,
+    generateEphemeralKeyPair, importPublicKey, exportPublicKeyPacket, importPublicKeyPacket,
+    deriveSessionKey, decryptBytes,
     toBase64, fromBase64,
     encryptForLink, decryptForLink
 } from "./crypto.js";
@@ -1140,8 +1140,8 @@ function handleDecryptedPayload(plaintext) {
 
 async function sendKeyExchange() {
     try {
-        const pubKeyBytes = await exportPublicKey(ephemeralKeyPair.publicKey);
-        const encrypted = await encryptBytes(passwordKey, pubKeyBytes);
+        const packet = await exportPublicKeyPacket(ephemeralKeyPair.publicKey);
+        const encrypted = await encrypt(passwordKey, JSON.stringify(packet));
         ws.send(JSON.stringify({ type: "key_exchange", data: encrypted.data, iv: encrypted.iv }));
     } catch {
         appendSystemMessage(t("sysKeyExchangeSendFailed"), {i18nKey: "sysKeyExchangeSendFailed"});
@@ -1151,14 +1151,23 @@ async function sendKeyExchange() {
     }
 }
 
+async function importPeerKeyExchange(data, iv) {
+    try {
+        const plaintext = await decrypt(passwordKey, data, iv);
+        return await importPublicKeyPacket(JSON.parse(plaintext));
+    } catch {}
+
+    const peerPubKeyBytes = await decryptBytes(passwordKey, data, iv);
+    if (peerPubKeyBytes.length !== 65 || peerPubKeyBytes[0] !== 0x04) {
+        throw new Error("Invalid public key");
+    }
+    return importPublicKey(peerPubKeyBytes);
+}
+
 async function handleKeyExchange(msg) {
     if (keyExchangeComplete) return;
     try {
-        const peerPubKeyBytes = await decryptBytes(passwordKey, msg.data, msg.iv);
-        if (peerPubKeyBytes.length !== 65 || peerPubKeyBytes[0] !== 0x04) {
-            throw new Error("Invalid public key");
-        }
-        const peerPublicKey = await importPublicKey(peerPubKeyBytes);
+        const peerPublicKey = await importPeerKeyExchange(msg.data, msg.iv);
         const { sessionKey: sk, sessionFingerprint } =
             await deriveSessionKey(ephemeralKeyPair.privateKey, peerPublicKey);
 
