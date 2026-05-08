@@ -151,6 +151,11 @@ class TestHttpEndpoints:
         assert resp.status_code == 200
         assert 'id="btn-notifications"' in resp.text
 
+    def test_crypto_js_contains_spki_key_packet_fallback(self):
+        resp = client.get("/static/crypto.js")
+        assert resp.status_code == 200
+        assert 'format: "spki"' in resp.text
+
 
 # --- WebSocket ---
 

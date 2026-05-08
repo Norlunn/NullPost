@@ -132,6 +132,20 @@ export async function importPublicKey(rawBytes) {
     );
 }
 
+export async function exportPublicKeySpki(publicKey) {
+    return crypto.subtle.exportKey("spki", publicKey);
+}
+
+export async function importPublicKeySpki(spkiBytes) {
+    return crypto.subtle.importKey(
+        "spki",
+        spkiBytes,
+        { name: "ECDH", namedCurve: "P-256" },
+        true,
+        []
+    );
+}
+
 function validateRawPublicKey(rawBytes) {
     if (!(rawBytes instanceof Uint8Array) || rawBytes.length !== 65 || rawBytes[0] !== 0x04) {
         throw new Error("Invalid public key");
@@ -149,6 +163,19 @@ export async function exportPublicKeyPacket(publicKey) {
             v: 2,
             format: "raw",
             key: toBase64(raw)
+        };
+    } catch {}
+
+    try {
+        const spki = await withTimeout(
+            exportPublicKeySpki(publicKey),
+            PUBLIC_KEY_EXPORT_TIMEOUT_MS,
+            "spki_export_timeout"
+        );
+        return {
+            v: 2,
+            format: "spki",
+            key: toBase64(spki)
         };
     } catch {}
 
@@ -185,6 +212,9 @@ export async function importPublicKeyPacket(packet) {
         const rawBytes = fromBase64(packet.key);
         validateRawPublicKey(rawBytes);
         return importPublicKey(rawBytes);
+    }
+    if (packet.format === "spki" && typeof packet.key === "string") {
+        return importPublicKeySpki(fromBase64(packet.key));
     }
     if (packet.format === "jwk" && packet.key && typeof packet.key === "object") {
         const { kty, crv, x, y } = packet.key;
