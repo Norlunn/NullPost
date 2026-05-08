@@ -168,6 +168,11 @@ class TestHttpEndpoints:
         assert "prepareKeyExchangePayload" in resp.text
         assert 'recordHandshakeDiagnostic("key_exchange.prepare_success"' in resp.text
 
+    def test_app_js_guards_notification_permission_before_key_exchange(self):
+        resp = client.get("/static/app.js")
+        assert resp.status_code == 200
+        assert '"Notification" in window && Notification.permission === "granted"' in resp.text
+
 
 # --- WebSocket ---
 

@@ -1202,7 +1202,7 @@ async function handleMessage(event) {
             case "connected":
                 setStatus("key_exchange");
                 appendSystemMessage(t("sysPeerConnected"), {i18nKey: "sysPeerConnected"});
-                if (Notification.permission === "granted" && document.visibilityState === "hidden") {
+                if ("Notification" in window && Notification.permission === "granted" && document.visibilityState === "hidden") {
                     new Notification(t("notifTitle"), { body: t("notifBody") });
                 }
                 const keyExchangeSent = await sendKeyExchange();
